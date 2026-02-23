@@ -50,8 +50,9 @@ rm -f "$TEMP_TARBALL"
 
 echo "✅ Fresh hashes computed"
 
+LATEST_DRIVER_TAG=${LATEST_DRIVER_TAG#v}
 if [ -z "${2:-}" ]; then
-  TAG="${TALOS_VERSION}-${LATEST_DRIVER_TAG}"
+  TAG="${LATEST_DRIVER_TAG}-v${TALOS_VERSION}"
 else
   TAG="$2"
 fi
