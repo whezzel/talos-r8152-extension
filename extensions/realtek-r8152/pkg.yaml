@@ -1,0 +1,15 @@
+name: realtek-r8152
+variant: scratch
+shell: /bin/sh
+dependencies:
+  - stage: base
+  - image: "PKG_IMAGE_PLACEHOLDER"
+steps:
+  - install:
+      - mkdir -p /rootfs/usr/lib/modules
+      - cp -a /usr/lib/modules/* /rootfs/usr/lib/modules/
+finalize:
+  - from: /rootfs
+    to: /rootfs
+  - from: /pkg/manifest.yaml
+    to: /

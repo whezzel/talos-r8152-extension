@@ -1,0 +1,37 @@
+name: realtek-r8152-pkg
+variant: scratch
+shell: /bin/bash
+dependencies:
+  - stage: base
+  - stage: kernel-build
+steps:
+  - sources:
+      - url: https://github.com/wget/realtek-r8152-linux/archive/refs/tags/v2.21.4.tar.gz
+        destination: realtek-r8152-linux.tar.gz
+        sha256: 05041e46b0edb75b53bbdac640fc027b1eac22cf493e76c3018ab3b5c1dc1df8
+        sha512: 6617cf7cb50fd35b97b5e3f2e47118f30af06654a809bf6b35d24a039591ab960b5ce54696fd67ae57955a5184904fdc9ad4c06c332aa9ce26c7b33fb30a4a12
+    prepare:
+      - |
+        tar -xzf realtek-r8152-linux.tar.gz --strip-components=1
+    build:
+      - |
+        sed -i 's|/lib/modules/$(cat /src/include/config/kernel.release)/build|/src|' ./Makefile
+        export KERNELRELEASE=$(cat /src/include/config/kernel.release)
+        export KERNELDIR=/src
+        export PWD=/src
+        cd /src
+        make -j$(($(nproc) - 4)) modules
+    install:
+      - |
+        export KERNELRELEASE=$(cat /src/include/config/kernel.release)
+        mkdir -p /rootfs/usr/lib/modules/${KERNELRELEASE}/kernel/drivers/net/usb
+        mkdir -p /rootfs/usr/lib/udev/rules.d/
+        install -D /src/drivers/net/usb/r8152.ko /rootfs/usr/lib/modules/${KERNELRELEASE}/kernel/drivers/net/usb/
+        install -D /tmp/build/50-usb-realtek-net.rules /rootfs/usr/lib/udev/rules.d/50-usb-realtek-net.rules
+        cp /src/modules.order /rootfs/usr/lib/modules/$(cat /src/include/config/kernel.release)/
+        cp /src/modules.builtin /rootfs/usr/lib/modules/$(cat /src/include/config/kernel.release)/
+        cp /src/modules.builtin.modinfo /rootfs/usr/lib/modules/$(cat /src/include/config/kernel.release)/
+        depmod -b /rootfs/usr ${KERNELRELEASE}
+finalize:
+  - from: /rootfs
+    to: /

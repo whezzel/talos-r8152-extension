@@ -1,0 +1,10 @@
+version: v1alpha1
+metadata:
+  name: realtek-r8152
+  version: "$VERSION"
+  author: Whezzel
+  description: |
+    Provides realtek r8152 driver with support included for r8157
+  compatibility:
+    talos:
+      version: ">= v1.10.0"
